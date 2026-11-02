@@ -1,0 +1,98 @@
+name: CD - Deploy to AWS
+
+on:
+  workflow_run:
+    workflows: ["CI - Build & Test"]
+    branches: [main]
+    types: [completed]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Compilar JAR
+        working-directory: backend
+        run: |
+          chmod +x gradlew
+          ./gradlew bootJar --no-daemon
+
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Obtener IPs de las instancias del ASG
+        id: get-instances
+        run: |
+          ASG_NAME="${{ vars.ASG_NAME || 'tienda-lego-asg' }}"
+          INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups \
+            --auto-scaling-group-names "$ASG_NAME" \
+            --query "AutoScalingGroups[0].Instances[*].InstanceId" \
+            --output text)
+
+          if [ -z "$INSTANCE_IDS" ]; then
+            echo "No se encontraron instancias en el ASG"
+            exit 1
+          fi
+
+          IPS=$(aws ec2 describe-instances \
+            --instance-ids $INSTANCE_IDS \
+            --query "Reservations[*].Instances[*].PublicIpAddress" \
+            --output text)
+
+          echo "ips=$IPS" >> "$GITHUB_OUTPUT"
+          echo "Instancias encontradas: $IPS"
+
+      - name: Desplegar en cada instancia
+        env:
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          echo "$SSH_KEY" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+
+          for IP in ${{ steps.get-instances.outputs.ips }}; do
+            echo "=== Desplegando en $IP ==="
+
+            # Copiar JAR
+            scp -o StrictHostKeyChecking=no -i /tmp/deploy_key \
+              backend/build/libs/*.jar ec2-user@$IP:/opt/tienda-lego/app.jar
+
+            # Copiar frontend
+            scp -o StrictHostKeyChecking=no -i /tmp/deploy_key \
+              -r frontend/* ec2-user@$IP:/var/www/tienda-lego/frontend/
+
+            # Reiniciar servicio
+            ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key ec2-user@$IP \
+              "sudo systemctl restart tienda-lego"
+
+            echo "=== Despliegue en $IP completado ==="
+          done
+
+          rm -f /tmp/deploy_key
+
+      - name: Verificar salud
+        run: |
+          ALB_DNS="${{ vars.ALB_DNS }}"
+          if [ -n "$ALB_DNS" ]; then
+            echo "Esperando 30s para que el servicio inicie..."
+            sleep 30
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://$ALB_DNS/actuator/health" || echo "000")
+            echo "Health check: HTTP $HTTP_CODE"
+            if [ "$HTTP_CODE" != "200" ]; then
+              echo "ADVERTENCIA: El health check devolvio $HTTP_CODE"
+            fi
+          fi
