@@ -22,7 +22,7 @@ public class PedidoController {
         this.service = service;
     }
 
-    @PostMapping
+    @PostMapping({"/directo", ""})
     @Operation(summary = "Crear pedido directo")
     public ResponseEntity<?> crear(@RequestBody Map<String, Object> body) {
         try {
