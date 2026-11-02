@@ -56,4 +56,16 @@ public class PedidoController {
     public List<Pedido> listarTodos() {
         return service.listarTodos();
     }
+
+    @PutMapping("/{id}/estado")
+    @Operation(summary = "Actualizar estado de un pedido")
+    public ResponseEntity<?> actualizarEstado(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        try {
+            String nuevoEstado = body.get("estado");
+            Pedido pedido = service.actualizarEstado(id, nuevoEstado);
+            return ResponseEntity.ok(pedido);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

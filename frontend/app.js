@@ -28,6 +28,7 @@ function renderNav() {
         nav.innerHTML = `
             <a href="index.html">Catalogo</a>
             <a href="carrito.html">Carrito</a>
+            <a href="pedidos.html">Mis Pedidos</a>
             ${usuario.rol === 'ADMIN' ? '<a href="admin.html">Admin</a>' : `<span class="nav-user">${esc(usuario.nombre)}</span>`}
             <a href="#" id="btn-logout">Salir</a>
         `;

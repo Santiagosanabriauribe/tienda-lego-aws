@@ -161,7 +161,7 @@ async function cargarProductos() {
 
     lista.querySelectorAll('[data-action="editar-prod"]').forEach(btn => {
         btn.addEventListener('click', () => {
-            const prod = productosCache.find(pr => pr.id === btn.dataset.id);
+            const prod = productosCache.find(pr => String(pr.id) === btn.dataset.id);
             if (prod) editarProducto(prod);
         });
     });
@@ -254,6 +254,12 @@ async function eliminarProducto(id) {
     }
 }
 
+function badgeEstado(estado) {
+    const clases = { 'CONFIRMADO': 'estado-confirmado', 'ENTREGADO': 'estado-entregado', 'CANCELADO': 'estado-cancelado' };
+    const textos = { 'CONFIRMADO': 'No entregado', 'ENTREGADO': 'Entregado', 'CANCELADO': 'Cancelado' };
+    return `<span class="estado-badge ${clases[estado] || ''}">${textos[estado] || estado}</span>`;
+}
+
 async function cargarPedidos() {
     const res = await fetch(`${API}/pedidos`, { headers: adminHeaders() });
     const pedidos = await res.json();
@@ -267,16 +273,41 @@ async function cargarPedidos() {
     lista.innerHTML = pedidos.map(p => `
         <div class="admin-item pedido-item">
             <div>
-                <strong>Pedido ${esc(p.id.substring(0, 8))}...</strong>
+                <strong>Pedido #${esc(p.id)}</strong>
                 <span class="admin-item-desc">${esc(p.usuarioNombre)} | ${esc(p.metodoPago)} | ${new Date(p.fecha).toLocaleDateString('es-CO')}</span>
                 <span class="admin-item-desc">Items: ${p.items.map(i => esc(i.productoNombre) + ' x' + i.cantidad).join(', ')}</span>
+                <span class="admin-item-desc">Envio: ${esc(p.nombreDestinatario)} - ${esc(p.direccionEnvio)}, ${esc(p.ciudadEnvio)}</span>
             </div>
-            <div>
-                <strong>$ ${Number(p.total).toLocaleString('es-CO')} COP</strong>
-                <span class="admin-item-badge activa">${esc(p.estado)}</span>
+            <div style="text-align:right">
+                <strong>$ ${Number(p.total).toLocaleString('es-CO')} COP</strong><br>
+                ${badgeEstado(p.estado)}
+                ${p.estado === 'CONFIRMADO' ? `
+                    <div class="admin-item-acciones" style="margin-top:0.5rem">
+                        <button data-action="entregar" data-id="${esc(p.id)}" style="background:#4caf50;color:white;border:none;padding:0.4rem 0.8rem;border-radius:4px;cursor:pointer;font-weight:600">Completar</button>
+                        <button data-action="cancelar" data-id="${esc(p.id)}" style="background:#f44336;color:white;border:none;padding:0.4rem 0.8rem;border-radius:4px;cursor:pointer;font-weight:600">Cancelar</button>
+                    </div>
+                ` : ''}
             </div>
         </div>
     `).join('');
+
+    lista.querySelectorAll('[data-action="entregar"]').forEach(btn => {
+        btn.addEventListener('click', () => cambiarEstadoPedido(btn.dataset.id, 'ENTREGADO'));
+    });
+    lista.querySelectorAll('[data-action="cancelar"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (confirm('Cancelar este pedido?')) cambiarEstadoPedido(btn.dataset.id, 'CANCELADO');
+        });
+    });
+}
+
+async function cambiarEstadoPedido(id, estado) {
+    await fetch(`${API}/pedidos/${id}/estado`, {
+        method: 'PUT',
+        headers: adminHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ estado })
+    });
+    cargarPedidos();
 }
 
 renderNav();

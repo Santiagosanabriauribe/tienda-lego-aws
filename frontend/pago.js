@@ -169,10 +169,36 @@ async function procesarPago() {
         const confirmacion = document.getElementById('confirmacion');
         confirmacion.classList.remove('hidden');
         document.getElementById('detalle-pedido').innerHTML = `
-            <p><strong>Pedido:</strong> ${data.id}</p>
-            <p><strong>Metodo:</strong> ${data.metodoPago}</p>
-            <p><strong>Total:</strong> ${formatoPrecio(data.total)}</p>
-            <p><strong>Estado:</strong> ${data.estado}</p>
+            <div class="factura">
+                <div class="factura-header">
+                    <h3>Factura de Compra</h3>
+                    <span class="factura-numero">Pedido #${data.id}</span>
+                </div>
+                <div class="factura-fecha">
+                    ${new Date(data.fecha).toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' })}
+                </div>
+                <hr>
+                <div class="factura-items">
+                    ${data.items.map(i => `
+                        <div class="factura-item">
+                            <span>${i.productoNombre} x${i.cantidad}</span>
+                            <span>${formatoPrecio(i.subtotal)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <hr>
+                <div class="factura-total">
+                    <strong>Total</strong>
+                    <strong>${formatoPrecio(data.total)}</strong>
+                </div>
+                <div class="factura-detalles">
+                    <p><strong>Metodo de pago:</strong> ${data.metodoPago}</p>
+                    <p><strong>Estado:</strong> <span class="estado-badge estado-${data.estado.toLowerCase()}">${data.estado}</span></p>
+                    <p><strong>Destinatario:</strong> ${data.nombreDestinatario}</p>
+                    <p><strong>Direccion:</strong> ${data.direccionEnvio}, ${data.ciudadEnvio}, ${data.departamentoEnvio}</p>
+                    <p><strong>Telefono:</strong> ${data.telefonoEnvio}</p>
+                </div>
+            </div>
         `;
     } catch (err) {
         errorMsg.textContent = 'Error de conexion con el servidor';

@@ -61,4 +61,15 @@ public class PedidoService {
     public List<Pedido> listarTodos() {
         return pedidoRepo.findAll();
     }
+
+    @Transactional
+    public Pedido actualizarEstado(Long id, String nuevoEstado) {
+        if (!List.of("CONFIRMADO", "ENTREGADO", "CANCELADO").contains(nuevoEstado)) {
+            throw new IllegalArgumentException("Estado no valido: " + nuevoEstado);
+        }
+        Pedido pedido = pedidoRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado"));
+        pedido.setEstado(nuevoEstado);
+        return pedidoRepo.save(pedido);
+    }
 }

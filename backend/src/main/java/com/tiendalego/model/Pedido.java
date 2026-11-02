@@ -19,7 +19,7 @@ public class Pedido {
 
     private String usuarioNombre;
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ItemPedido> items = new ArrayList<>();
 
     @Column(nullable = false)

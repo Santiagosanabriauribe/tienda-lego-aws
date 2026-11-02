@@ -830,6 +830,129 @@ main {
   color: #d32f2f;
 }
 
+/* Factura post-compra */
+.factura {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+.factura-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.factura-header h3 {
+  font-size: 1.1rem;
+  color: #333;
+}
+.factura-numero {
+  font-size: 0.9rem;
+  color: #888;
+  font-weight: 600;
+}
+.factura-fecha {
+  font-size: 0.85rem;
+  color: #999;
+  margin-bottom: 1rem;
+}
+.factura-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.factura-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+.factura-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.1rem;
+  color: #d32f2f;
+  margin-top: 0.5rem;
+}
+.factura-detalles {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+.factura-detalles p {
+  margin: 0.3rem 0;
+}
+
+/* Pedidos del usuario */
+.pedido-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+.pedido-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+.pedido-fecha {
+  display: block;
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 0.2rem;
+}
+.pedido-card-items {
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  padding: 0.5rem 0;
+  margin-bottom: 0.75rem;
+}
+.pedido-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  padding: 0.2rem 0;
+}
+.pedido-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.pedido-envio {
+  font-size: 0.85rem;
+  color: #888;
+}
+.pedido-envio span {
+  display: block;
+}
+.pedido-total {
+  font-size: 1.1rem;
+  color: #d32f2f;
+}
+
+/* Badges de estado */
+.estado-badge {
+  display: inline-block;
+  padding: 0.2rem 0.7rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.estado-confirmado {
+  background: #fff3e0;
+  color: #e65100;
+}
+.estado-entregado {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.estado-cancelado {
+  background: #ffebee;
+  color: #c62828;
+}
+
 @media (max-width: 600px) {
   header h1 {
     font-size: 1.3rem;

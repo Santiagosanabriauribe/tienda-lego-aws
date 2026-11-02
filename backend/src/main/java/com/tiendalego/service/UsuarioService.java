@@ -33,6 +33,11 @@ public class UsuarioService {
                         hashPassword("admin1234"), "ADMIN");
                 repo.save(admin);
             }
+            if (!repo.existsByEmail("santiago@admin.edu.co")) {
+                Usuario admin2 = new Usuario("Santiago Admin", "santiago@admin.edu.co",
+                        hashPassword("admin12345"), "ADMIN");
+                repo.save(admin2);
+            }
         };
     }
 
