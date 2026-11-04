@@ -25,6 +25,7 @@ variable "instance_type" {
 variable "key_name" {
   description = "Nombre del Key Pair de EC2 para SSH"
   type        = string
+  default     = "tienda-lego-key"
 }
 
 variable "db_username" {
@@ -36,6 +37,7 @@ variable "db_username" {
 variable "db_password" {
   description = "Contrasena de la base de datos RDS"
   type        = string
+  default     = "TiendaLego2026!"
   sensitive   = true
 }
 

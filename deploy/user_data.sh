@@ -3,7 +3,11 @@ set -ex
 
 # 1. Instalar Java 21, nginx y git
 dnf update -y
-dnf install -y java-21-amazon-corretto nginx git
+dnf install -y java-21-amazon-corretto-devel nginx git
+
+# Configurar JAVA_HOME para Gradle
+export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+echo "export JAVA_HOME=$JAVA_HOME" >> /etc/environment
 
 # 2. Crear directorios
 mkdir -p /var/www/tienda-lego/frontend
